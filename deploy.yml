@@ -28,8 +28,7 @@
         - apt-get install rsync -y
 
     script:
-        - export WEBAPP_CHANGED_DATE="$(ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "date -r $DEPLOY_PATH '+%Y_%m_%d_%H_%M_%S'")"
-        - export DEPLOY_BACKUP_PATH="/tmp/deploy/${CI_ENVIRONMENT_SLUG}_${WEBAPP_CHANGED_DATE}"
+        - export DEPLOY_BACKUP_PATH="/tmp/deploy/${CI_PROJECT_PATH_SLUG}/${CI_ENVIRONMENT_SLUG}_${CI_COMMIT_SHORT_SHA}"
         - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "rm -rf $DEPLOY_BACKUP_PATH && mkdir -p $DEPLOY_BACKUP_PATH && cp -r $DEPLOY_PATH/. $DEPLOY_BACKUP_PATH"
         - rsync -ra -e ssh --stats --delete --exclude-from='.deploy/excluded.txt' ./ $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST:$DEPLOY_BACKUP_PATH
         - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "cd $DEPLOY_PATH && shopt -s extglob dotglob && find . -mindepth 1 -delete && mv $DEPLOY_BACKUP_PATH/* . && shopt -u dotglob"
