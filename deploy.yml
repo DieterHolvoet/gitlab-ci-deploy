@@ -1,0 +1,36 @@
+# Load environment-specific variables
+# @see https://gitlab.com/gitlab-org/gitlab-foss/-/issues/20367#note_89285011
+.load_env_vars: &load_env_vars
+    - ENV_VAR_SUFFIX="_${CI_ENVIRONMENT_NAME^^}"
+    - for var in $(compgen -e | grep "${ENV_VAR_SUFFIX}$"); do declare -x ${var%${ENV_VAR_SUFFIX}}="${!var}"; done
+
+# Create a .env file based on .env.example, filled in using current environment variables
+.create_dotenv:
+    script:
+        - cp .env.example .env
+        - for key in $(compgen -e); do value=$(echo ${!key} | sed -e 's/\//\\\//g' -e "s/\n//") && sed -i "s/$key=.*/$key=\"${value}\"/" .env; done
+    artifacts:
+        paths:
+            - .env
+
+# Deploy files to a remote server and optionally run a post-deploy script
+.deploy:
+    before_script:
+        # Setup ssh
+        - which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
+        - mkdir -p ~/.ssh
+        - chmod 700 ~/.ssh
+        - eval $(ssh-agent -s)
+        - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+        - echo "$DEPLOY_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+        # Setup rsync
+        - apt-get update
+        - apt-get install rsync -y
+
+    script:
+        - export WEBAPP_CHANGED_DATE="$(ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "date -r $DEPLOY_PATH '+%Y_%m_%d_%H_%M_%S'")"
+        - export DEPLOY_BACKUP_PATH="/tmp/deploy/${CI_ENVIRONMENT_SLUG}_${WEBAPP_CHANGED_DATE}"
+        - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "rm -rf $DEPLOY_BACKUP_PATH && mkdir -p $DEPLOY_BACKUP_PATH && cp -r $DEPLOY_PATH/. $DEPLOY_BACKUP_PATH"
+        - rsync -ra -e ssh --stats --delete --exclude-from='.deploy/excluded.txt' ./ $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST:$DEPLOY_BACKUP_PATH
+        - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "cd $DEPLOY_PATH && shopt -s extglob dotglob && find . -mindepth 1 -delete && mv $DEPLOY_BACKUP_PATH/* . && shopt -u dotglob"
+        - '[[ -f .deploy/post-deploy.sh ]] && ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST  "cd $DEPLOY_PATH && /bin/bash -s " < .deploy/post-deploy.sh'
