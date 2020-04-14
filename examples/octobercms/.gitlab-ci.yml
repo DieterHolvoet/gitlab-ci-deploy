@@ -1,0 +1,72 @@
+include:
+  - 'https://raw.githubusercontent.com/DieterHolvoet/gitlab-ci-deploy/master/deploy.yml'
+
+stages:
+  - build
+  - deploy
+
+composer:
+  image: chialab/php-dev:7.2
+  stage: build
+  script:
+    - composer install --no-progress --no-interaction --no-dev
+  artifacts:
+    paths:
+      - vendor/
+      - plugins/
+      - modules/
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - vendor/
+      - plugins/
+      - modules/
+  only:
+    changes:
+      - composer.{lock,json}
+
+theme:
+  image: node:8
+  stage: build
+  script:
+    - make
+  artifacts:
+    paths:
+      - themes/custom/assets/build
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - themes/custom/.cache
+      - themes/custom/node_modules
+  only:
+    changes:
+      - themes/custom/assets/bundles/*.js
+      - themes/custom/assets/src/**/*.{scss,js}
+      - themes/custom/assets/package.json
+      - themes/custom/assets/yarn.lock
+
+dotenv_staging:
+  stage: build
+  extends:
+    - .create_dotenv
+    - .only_staging
+
+dotenv_production:
+  stage: build
+  extends:
+    - .create_dotenv
+    - .only_production
+
+deploy_staging:
+  stage: deploy
+  extends:
+    - .deploy
+    - .only_staging
+
+deploy_production:
+  stage: deploy
+  when: manual
+  extends:
+    - .deploy
+    - .only_production
+
