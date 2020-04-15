@@ -1,0 +1,20 @@
+# For more information on rsync filter rules, please refer to the man pages:
+# http://manpages.ubuntu.com/manpages/eoan/en/man1/rsync.1.html#filter%20rules
+
+# Exclude .gitignored files that aren't artifacts
+- public/sites/*/files/
+
+# Exclude files we don't need in production
+- .git
+- .deploy
+- .gitlab-ci.yml
+
+# Protect artifacts because they might be missing in subsequent deploys
+P public/core
+P public/libraries
+P public/modules/contrib
+P public/profiles/contrib
+P public/themes/contrib
+P drush/Commands
+P vendor/
+P .env

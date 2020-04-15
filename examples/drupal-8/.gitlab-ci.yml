@@ -6,6 +6,8 @@ stages:
   - deploy
 
 composer:
+  extends:
+    - .only_production
   image: chialab/php-dev:7.3
   stage: build
   script:
@@ -34,14 +36,14 @@ composer:
       - composer.{lock,json}
 
 dotenv:
-  stage: build
   extends:
     - .create_dotenv
     - .only_production
+  stage: build
 
 deploy:
-  stage: deploy
-  when: manual
   extends:
     - .deploy
     - .only_production
+  stage: deploy
+  when: manual
