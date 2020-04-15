@@ -34,16 +34,33 @@
         - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "cd $DEPLOY_PATH && shopt -s extglob dotglob && find . -mindepth 1 -delete && mv $DEPLOY_BACKUP_PATH/* . && shopt -u dotglob"
         - '[[ -f .deploy/post-deploy.sh ]] && ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST  "cd $DEPLOY_PATH && /bin/bash -s " < .deploy/post-deploy.sh'
 
-# Limit a job to only run on the production environment
+# Limit a job to Semantic Versioning 2.0-compliant refs
+.only_semver:
+  only:
+    - /(?in)^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-([a-z-][\da-z-]+|[\da-z-]+[a-z-][\da-z-]*|0|[1-9]\d*)(\.([a-z-][\da-z-]+|[\da-z-]+[a-z-][\da-z-]*|0|[1-9]\d*))*)?(\+[\da-z-]+(\.[\da-z-]+)*)?$/
+
+# Limit a job to Git Flow release/feature/hotfix branches
+.only_release:
+  only:
+    - /^release\/.+$/
+
+.only_feature:
+  only:
+    - /^feature\/.+$/
+
+.only_hotfix:
+  only:
+    - /^hotfix\/.+$/
+
+# Provide some commonly used environments
 .only_production:
   environment:
     name: production
-  only:
-    - /^[0-9]+\.[0-9]+\.[0-9]+$/
+  extends:
+    - .only-semver
 
-# Limit a job to only run on the staging environment
 .only_staging:
   environment:
     name: staging
-  only:
-    - /^release\/v[0-9]+$/
+  extends:
+    - .only-release
