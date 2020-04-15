@@ -1,5 +1,5 @@
 variables:
-    DEPLOY_BACKUP_PATH: '/tmp/deploy_$CI_PROJECT_PATH_SLUG_$CI_ENVIRONMENT_SLUG_$CI_COMMIT_SHORT_SHA'
+    DEPLOY_BACKUP_PATH: '/tmp/deploy_${CI_PROJECT_PATH_SLUG}_${CI_ENVIRONMENT_SLUG}_${CI_COMMIT_SHORT_SHA}'
 
 # Load environment-specific variables
 # @see https://gitlab.com/gitlab-org/gitlab-foss/-/issues/20367#note_89285011
