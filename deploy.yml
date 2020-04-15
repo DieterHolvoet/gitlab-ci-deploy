@@ -34,6 +34,7 @@ variables:
         - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "rm -rf $DEPLOY_BACKUP_PATH && mkdir -p $DEPLOY_BACKUP_PATH && cp -r $DEPLOY_PATH/. $DEPLOY_BACKUP_PATH"
         - rsync -ra -e ssh --stats --delete --filter='. .deploy/.rsync-filter' ./ $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST:$DEPLOY_BACKUP_PATH
         - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "cd $DEPLOY_PATH && shopt -s extglob dotglob && find . -mindepth 1 -delete && mv $DEPLOY_BACKUP_PATH/* . && shopt -u dotglob"
+        - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "rm -rf $DEPLOY_BACKUP_PATH"
         - '[[ ! -f .deploy/post-deploy.sh ]] || ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST  "cd $DEPLOY_PATH && /bin/bash -s " < .deploy/post-deploy.sh'
 
 # Limit a job to Semantic Versioning 2.0-compliant refs. The regex is taken from the official website:
