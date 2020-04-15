@@ -1,3 +1,6 @@
+variables:
+    DEPLOY_BACKUP_PATH: '/tmp/deploy_$CI_PROJECT_PATH_SLUG_$CI_ENVIRONMENT_SLUG_$CI_COMMIT_SHORT_SHA'
+
 # Load environment-specific variables
 # @see https://gitlab.com/gitlab-org/gitlab-foss/-/issues/20367#note_89285011
 .load_env_vars: &load_env_vars
@@ -28,7 +31,6 @@
         - apt-get install rsync -y
 
     script:
-        - export DEPLOY_BACKUP_PATH="/tmp/deploy_${CI_PROJECT_PATH_SLUG}_${CI_ENVIRONMENT_SLUG}_${CI_COMMIT_SHORT_SHA}"
         - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "rm -rf $DEPLOY_BACKUP_PATH && mkdir -p $DEPLOY_BACKUP_PATH && cp -r $DEPLOY_PATH/. $DEPLOY_BACKUP_PATH"
         - rsync -ra -e ssh --stats --delete --filter='. .deploy/.rsync-filter' ./ $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST:$DEPLOY_BACKUP_PATH
         - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "cd $DEPLOY_PATH && shopt -s extglob dotglob && find . -mindepth 1 -delete && mv $DEPLOY_BACKUP_PATH/* . && shopt -u dotglob"
