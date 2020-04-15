@@ -39,7 +39,6 @@
   environment:
     name: production
   only:
-    - tags
     - /^[0-9]+\.[0-9]+\.[0-9]+$/
 
 # Limit a job to only run on the staging environment
@@ -47,5 +46,4 @@
   environment:
     name: staging
   only:
-    - branches
     - /^release\/v[0-9]+$/
