@@ -57,10 +57,10 @@
   environment:
     name: production
   extends:
-    - .only-semver
+    - .only_semver
 
 .only_staging:
   environment:
     name: staging
   extends:
-    - .only-release
+    - .only_release
