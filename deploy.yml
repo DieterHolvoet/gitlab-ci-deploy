@@ -36,7 +36,8 @@ variables:
         - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "cd $DEPLOY_PATH && shopt -s extglob dotglob && find . -mindepth 1 -delete && mv $DEPLOY_BACKUP_PATH/* . && shopt -u dotglob"
         - '[[ ! -f .deploy/post-deploy.sh ]] || ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST  "cd $DEPLOY_PATH && /bin/bash -s " < .deploy/post-deploy.sh'
 
-# Limit a job to Semantic Versioning 2.0-compliant refs
+# Limit a job to Semantic Versioning 2.0-compliant refs. The regex is taken from the official website:
+# https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
 .only_semver:
   only:
     - /^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
@@ -54,7 +55,7 @@ variables:
   only:
     - /^hotfix\/.+$/
 
-# Provide some commonly used environments
+# Some commonly used environments
 .only_production:
   environment:
     name: production

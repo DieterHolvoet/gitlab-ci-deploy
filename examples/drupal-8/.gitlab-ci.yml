@@ -35,6 +35,20 @@ composer:
     changes:
       - composer.{lock,json}
 
+theme:
+  image: node:8
+  stage: build
+  script:
+    - make
+  artifacts:
+    paths:
+      - public/themes/custom/site_theme/resources/dist
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - public/themes/custom/site_theme/.cache
+      - public/themes/custom/site_theme/node_modules
+
 dotenv:
   extends:
     - .create_dotenv

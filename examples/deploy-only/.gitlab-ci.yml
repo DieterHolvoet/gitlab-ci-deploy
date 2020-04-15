@@ -1,0 +1,10 @@
+include:
+  - 'https://raw.githubusercontent.com/DieterHolvoet/gitlab-ci-deploy/master/deploy.yml'
+
+stages:
+  - deploy
+
+deploy:
+  extends:
+    - .deploy
+  stage: deploy
