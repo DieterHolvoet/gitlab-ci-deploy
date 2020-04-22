@@ -1,7 +1,6 @@
 variables:
-    RELEASES_PATH: '${DEPLOY_PATH}/releases'
-    NEXT_RELEASE_PATH: '${RELEASES_PATH}/${CI_COMMIT_SHORT_SHA}_${DEPLOY_DATE_ISO_8601}'
-    CURRENT_RELEASE_PATH: '${DEPLOY_PATH}/current'
+    RELEASES_FOLDER: 'releases'
+    CURRENT_RELEASE_FOLDER: 'current'
     KEEP_RELEASES: 2
 
 # Load environment-specific variables
@@ -35,6 +34,9 @@ variables:
         # Setup variables
         - export DEPLOY_DATE_ISO_8601=$(date -u +"%Y-%m-%dT%H-%M-%SZ")
         - export DEPLOY_DATE_TIMESTAMP=$(date -u +%s)
+        - export RELEASES_PATH="${DEPLOY_PATH}/${RELEASES_FOLDER}"
+        - export NEXT_RELEASE_PATH="${RELEASES_PATH}/${CI_COMMIT_SHORT_SHA}_${DEPLOY_DATE_ISO_8601}"
+        - export CURRENT_RELEASE_PATH="${RELEASES_PATH}/${CURRENT_RELEASE_FOLDER}"
 
     script:
         - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "mkdir -p $RELEASES_PATH $CURRENT_RELEASE_PATH $NEXT_RELEASE_PATH && cp -r $CURRENT_RELEASE_PATH/. $NEXT_RELEASE_PATH"
