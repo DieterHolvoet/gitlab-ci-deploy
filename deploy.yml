@@ -1,6 +1,6 @@
 variables:
     RELEASES_PATH: '${DEPLOY_PATH}/releases'
-    NEXT_RELEASE_PATH: '${RELEASES_PATH}/${CI_COMMIT_SHORT_SHA}_$(date +%d-%m-%Y_%H-%M-%S)'
+    NEXT_RELEASE_PATH: '${RELEASES_PATH}/${CI_COMMIT_SHORT_SHA}_${DEPLOY_DATE_ISO_8601}}'
     CURRENT_RELEASE_PATH: '${DEPLOY_PATH}/current'
     KEEP_RELEASES: 2
 
@@ -32,6 +32,9 @@ variables:
         # Setup rsync
         - apt-get update
         - apt-get install rsync -y
+        # Setup variables
+        - export DEPLOY_DATE_ISO_8601=$(date -u +"%Y-%m-%dT%H-%M-%SZ")
+        - export DEPLOY_DATE_TIMESTAMP=$(date -u +%s)
 
     script:
         - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "mkdir -p $RELEASES_PATH $CURRENT_RELEASE_PATH $NEXT_RELEASE_PATH && cp -r $CURRENT_RELEASE_PATH/. $NEXT_RELEASE_PATH"
