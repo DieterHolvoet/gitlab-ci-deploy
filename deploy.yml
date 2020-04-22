@@ -1,5 +1,8 @@
 variables:
-    DEPLOY_BACKUP_PATH: '/tmp/deploy_${CI_PROJECT_PATH_SLUG}_${CI_ENVIRONMENT_SLUG}_${CI_COMMIT_SHORT_SHA}'
+    RELEASES_PATH: '${DEPLOY_PATH}/releases'
+    NEXT_RELEASE_PATH: '${RELEASES_PATH}/${CI_COMMIT_SHORT_SHA}_$(date +%d-%m-%Y_%H-%M-%S)'
+    CURRENT_RELEASE_PATH: '${DEPLOY_PATH}/current'
+    KEEP_RELEASES: 2
 
 # Load environment-specific variables
 # @see https://gitlab.com/gitlab-org/gitlab-foss/-/issues/20367#note_89285011
@@ -31,11 +34,11 @@ variables:
         - apt-get install rsync -y
 
     script:
-        - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "rm -rf $DEPLOY_BACKUP_PATH && mkdir -p $DEPLOY_BACKUP_PATH && cp -r $DEPLOY_PATH/. $DEPLOY_BACKUP_PATH"
-        - rsync -ra -e ssh --stats --delete --filter='. .deploy/.rsync-filter' ./ $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST:$DEPLOY_BACKUP_PATH
-        - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "cd $DEPLOY_PATH && shopt -s extglob dotglob && find . -mindepth 1 -delete && mv $DEPLOY_BACKUP_PATH/* . && shopt -u dotglob"
-        - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "rm -rf $DEPLOY_BACKUP_PATH"
-        - '[[ ! -f .deploy/post-deploy.sh ]] || ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST  "cd $DEPLOY_PATH && /bin/bash -s " < .deploy/post-deploy.sh'
+        - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "mkdir -p $RELEASES_PATH $CURRENT_RELEASE_PATH $NEXT_RELEASE_PATH && cp -r $CURRENT_RELEASE_PATH/. $NEXT_RELEASE_PATH"
+        - rsync -ra -e ssh --stats --delete --filter='. .deploy/.rsync-filter' ./ $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST:$NEXT_RELEASE_PATH
+        - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "rm -rf $CURRENT_RELEASE_PATH && ln -s $NEXT_RELEASE_PATH $CURRENT_RELEASE_PATH"
+        - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "ls -tpd $RELEASES_PATH/* | grep '/$' | tail -n +$((KEEP_RELEASES+1)) | xargs -I {} rm -rf -- {}"
+        - '[[ ! -f .deploy/post-deploy.sh ]] || ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST  "cd $CURRENT_RELEASE_PATH && /bin/bash -s " < .deploy/post-deploy.sh'
 
 # Limit a job to Semantic Versioning 2.0-compliant refs. The regex is taken from the official website:
 # https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
