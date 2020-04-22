@@ -26,9 +26,16 @@ The deployment of your files is done using
 - Filter rules can be defined in the `.deploy/.rsync-filter` file.
 
 To minimise downtime, the file sync will happen to a copy of your files 
- in a temporary folder before replacing the actual files. The path of 
- that temporary folder can be overridden through the `DEPLOY_BACKUP_PATH` 
- variable.
+ in a new _release_. After finishing the sync, the active release will be
+ changed by replacing the symlink. A couple of settings can be changed 
+ through variables:
+- `RELEASES_FOLDER`: the name of the folder in which all releases are 
+    stored (default: `releases`)
+- `CURRENT_RELEASE_FOLDER`: the name of the folder to which the active 
+    release is symlinked (default: `current`)
+- `KEEP_RELEASES`: the amount of releases that should be kept (minimum: 1,
+    default: 2)
+
 
 A couple environment variables are required, check the [documentation](https://docs.gitlab.com/ee/ci/variables/) for ways to define them.
 - `DEPLOY_SERVER_HOST`: the host of the server
