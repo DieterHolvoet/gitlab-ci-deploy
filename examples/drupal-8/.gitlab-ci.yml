@@ -4,6 +4,7 @@ include:
 stages:
   - build
   - deploy
+  - post_deploy
 
 composer:
   extends:
@@ -61,3 +62,9 @@ deploy:
     - .only_production
   stage: deploy
   when: manual
+
+sentry:
+  stage: post_deploy
+  extends:
+    - .create_sentry_release
+    - .only_production

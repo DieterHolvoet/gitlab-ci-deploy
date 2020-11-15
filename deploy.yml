@@ -45,6 +45,15 @@ variables:
         - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "ls -tpd $RELEASES_PATH/* | grep '/$' | tail -n +$((KEEP_RELEASES+1)) | xargs -I {} rm -rf -- {}"
         - '[[ ! -f .deploy/post-deploy.sh ]] || ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST  "cd $CURRENT_RELEASE_PATH && /bin/bash -s " < .deploy/post-deploy.sh'
 
+.create_sentry_release:
+    image: getsentry/sentry-cli
+    script:
+        - echo "Creating a new release $CI_COMMIT_SHA"
+        - sentry-cli releases new $CI_COMMIT_SHA
+        - sentry-cli releases set-commits --auto $CI_COMMIT_SHA
+        - sentry-cli releases finalize $CI_COMMIT_SHA
+        - echo "Finalized release for $CI_COMMIT_SHA"
+
 # Limit a job to Semantic Versioning 2.0-compliant refs. The regex is taken from the official website:
 # https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
 .only_semver:

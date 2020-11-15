@@ -66,6 +66,12 @@ The script will take a `.env.example` file as starting point and fill in
  [documentation](https://docs.gitlab.com/ee/ci/variables/) for more 
  information.
 
+### Create a Sentry release
+A script is provided to create a new Sentry release. To add this functionality to your pipeline, 
+ create a new job extending `.create_sentry_release` and make sure `SENTRY_AUTH_TOKEN`, `SENTRY_DSN`, `SENTRY_ORG` and 
+ `SENTRY_PROJECT` are available as environment variables. Please refer to the 
+ [Sentry CLI docs](https://docs.sentry.io/product/cli/configuration/#configuration-values) for more information.
+
 ## Examples
 Some examples are provided to get you started quickly.
 
@@ -74,7 +80,7 @@ Some examples are provided to get you started quickly.
 
 ### [`drupal-8`](examples/drupal-8)
 - Drupal 8 website
-- jobs for building a custom theme, .env file and installing Composer dependencies
+- jobs for building a custom theme, .env file, installing Composer dependencies and creating a Sentry release after deploying
 - a set of Drush commands are executed after deploying.
 
 ### [`octobercms`](examples/octobercms)
