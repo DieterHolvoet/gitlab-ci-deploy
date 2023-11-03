@@ -43,7 +43,7 @@ variables:
     script:
         - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "mkdir -p $RELEASES_PATH $CURRENT_RELEASE_PATH $NEXT_RELEASE_PATH $SHARED_PATH && cp -r $CURRENT_RELEASE_PATH/. $NEXT_RELEASE_PATH"
         - rsync -ra -e ssh --stats --delete --filter='. .deploy/.rsync-filter' ./ $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST:$NEXT_RELEASE_PATH
-        - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "rm -rf $CURRENT_RELEASE_PATH && ln -s $NEXT_RELEASE_PATH $CURRENT_RELEASE_PATH && cp -rsf $SHARED_PATH $NEXT_RELEASE_PATH"
+        - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "rm -rf $CURRENT_RELEASE_PATH && ln -s $NEXT_RELEASE_PATH $CURRENT_RELEASE_PATH && cp -rsf $SHARED_PATH/* $NEXT_RELEASE_PATH"
         - ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST "ls -tpd $RELEASES_PATH/* | grep '/$' | tail -n +$((KEEP_RELEASES+1)) | xargs -I {} rm -rf -- {}"
         - '[[ ! -f .deploy/post-deploy.sh ]] || ssh -p22 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_HOST  "cd $CURRENT_RELEASE_PATH && /bin/bash -s " < .deploy/post-deploy.sh'
 
