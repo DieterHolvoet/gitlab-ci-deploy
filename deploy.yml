@@ -11,12 +11,12 @@ variables:
 
 # Create a .env file based on .env.example, filled in using current environment variables
 .create_dotenv:
-    script:
-        - cp .env.example .env
-        - for key in $(compgen -e); do value=$(echo ${!key} | sed -e 's/\//\\\//g' -e "s/\n//") && sed -i "s/$key=.*/$key=\"${value}\"/" .env; done
-    artifacts:
-        paths:
-            - .env
+  script:
+    - cp .env.example .env
+    - for key in $(compgen -e); do value=$(echo ${!key} | sed -e 's/\//\\\//g' -e "s/\n//") && sed -i "s/^$key=.*/$key=\"${value}\"/" .env; done
+  artifacts:
+    paths:
+      - .env
 
 # Deploy files to a remote server and optionally run a post-deploy script
 .deploy:
